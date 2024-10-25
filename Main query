@@ -1,0 +1,76 @@
+WITH sales_data AS (
+    SELECT 
+        ad.vehicle_id,
+        ad.sales_region,
+        ad.initial_import_date,
+        ad.return_date,
+        COALESCE(od.delivery_date, '2999-12-31') AS delivery_date, -- Future date as fallback
+        COALESCE(ad.sales_ready_date, '2999-12-31') AS sales_ready_date, -- Future date as fallback
+        COALESCE(cls.eligible_purchase_date, '2999-12-31') AS eligible_purchase_date,
+        COALESCE(cls.unpublished_date, '2999-12-31') AS unpublished_date,
+        COALESCE(cls.published_date, '2999-12-31') AS published_date,
+        COALESCE(od.contract_date, '2999-12-31') AS contract_date,
+        COALESCE(od.cancel_date, '2999-12-31') AS cancel_date,
+        COALESCE(ad.purchase_price, 0) / 100 AS purchase_cost,
+        COALESCE(prc.anticipated_sale_price, 0) / 100 AS projected_price,
+        COALESCE(mrk.final_sale_price, 0) AS sale_cost,
+        COALESCE(mrk.profit_margin, 0) AS profit_margin
+    FROM auto_sales1.vehicle_data AS ad
+    LEFT JOIN auto_classifications.classification AS cls ON cls.vehicle_id = ad.vehicle_id
+    LEFT JOIN auto_orders.order_data AS od ON od.vehicle_id = ad.vehicle_id AND (od.cancel_date IS NULL OR od.cancel_date > CURRENT_DATE)
+    LEFT JOIN auto.lead_data AS ld ON ld.vehicle_id = ad.vehicle_id
+    LEFT JOIN auto_pricing.price_data AS prc ON prc.lead_id = ld.lead_id
+    LEFT JOIN analytics.market_margins AS mrk ON mrk.vehicle_id = ad.vehicle_id
+    WHERE ad.initial_import_date > '2020-01-01' 
+          AND ad.test_flag = FALSE
+          AND ad.sales_region = 'DE'
+),
+
+inventory_timeline AS (
+    SELECT 
+        cd.date_val,
+        DAYOFWEEK(cd.date_val) AS day_of_week,
+        sd.vehicle_id,
+        sd.sales_region,
+        DATEDIFF(cd.date_val, sd.initial_import_date) AS days_in_inventory,
+        DATEDIFF(cd.date_val, sd.sales_ready_date) AS days_ready_for_sale,
+        CASE WHEN sd.contract_date <= cd.date_val AND (sd.cancel_date IS NULL OR sd.cancel_date > cd.date_val) THEN TRUE ELSE FALSE END AS reserved_flag,
+        CASE WHEN (DATEDIFF(cd.date_val, sd.published_date) > 0 
+                   AND (sd.eligible_purchase_date > cd.date_val OR sd.eligible_purchase_date IS NULL)) THEN TRUE ELSE FALSE END AS coming_soon,
+        CASE WHEN (DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 0 
+                   AND (sd.unpublished_date > cd.date_val OR sd.unpublished_date IS NULL)) THEN TRUE ELSE FALSE END AS available_online,
+        CASE WHEN DATEDIFF(cd.date_val, sd.sales_ready_date) > 0 THEN TRUE ELSE FALSE END AS ready_for_sale,
+        DATEDIFF(cd.date_val, sd.published_date) AS days_coming_soon,
+        DATEDIFF(cd.date_val, sd.eligible_purchase_date) AS days_online,
+        DATEDIFF(cd.date_val, sd.contract_date) AS days_signed,
+        COALESCE(sd.purchase_cost, 0) AS purchase_cost,
+        COALESCE(sd.projected_price, 0) AS projected_price,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 7 THEN 1 ELSE 0 END AS inv_0_7,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 7 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 14 THEN 1 ELSE 0 END AS inv_8_14,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 14 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 29 THEN 1 ELSE 0 END AS inv_15_29,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 29 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 39 THEN 1 ELSE 0 END AS inv_30_39,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 39 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 59 THEN 1 ELSE 0 END AS inv_40_59,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 59 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 89 THEN 1 ELSE 0 END AS inv_60_89,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 89 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 129 THEN 1 ELSE 0 END AS inv_90_129,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 129 AND DATEDIFF(cd.date_val, sd.eligible_purchase_date) <= 149 THEN 1 ELSE 0 END AS inv_130_149,
+        CASE WHEN DATEDIFF(cd.date_val, sd.eligible_purchase_date) > 149 THEN 1 ELSE 0 END AS inv_150_plus,
+        CASE WHEN sd.return_date = cd.date_val THEN 1 ELSE NULL END AS returned
+    FROM auto.calendar_dates AS cd
+    LEFT JOIN sales_data AS sd ON cd.date_val >= sd.initial_import_date 
+                               AND cd.date_val <= COALESCE(sd.delivery_date, sd.return_date, CURRENT_DATE)
+    WHERE cd.date_val BETWEEN '2023-01-01' AND CURRENT_DATE
+)
+
+SELECT DATE_FORMAT(date_val, '%Y_%u') AS sales_week,
+    sales_region,
+    SUM(inv_0_7) AS inv_0_7,
+    SUM(inv_8_14) AS inv_8_14,
+    SUM(inv_15_29) AS inv_15_29,
+    SUM(inv_30_39) AS inv_30_39,
+    SUM(inv_40_59) AS inv_40_59,
+    SUM(inv_60_89) AS inv_60_89,
+    SUM(inv_90_129) AS inv_90_129,
+    SUM(inv_130_149) AS inv_130_149,
+    SUM(inv_150_plus) AS inv_150_plus
+FROM inventory_timeline
+GROUP BY sales_week, sales_region
