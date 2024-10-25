@@ -1,0 +1,212 @@
+CREATE DATABASE IF NOT EXISTS auto_sales1;
+CREATE DATABASE IF NOT EXISTS auto_classifications;
+CREATE DATABASE IF NOT EXISTS auto_orders;
+CREATE DATABASE IF NOT EXISTS auto_pricing;
+CREATE DATABASE IF NOT EXISTS analytics;
+CREATE DATABASE IF NOT EXISTS auto;
+
+USE auto_sales1;
+DROP TABLE IF EXISTS vehicle_data;
+CREATE TABLE vehicle_data (
+    vehicle_id VARCHAR(10) PRIMARY KEY,
+    sales_region VARCHAR(2),
+    initial_import_date DATE,
+    return_date DATE,
+    sales_ready_date DATE,
+    purchase_price DECIMAL(10 , 2 ),
+    test_flag BOOLEAN
+);
+
+USE auto_classifications;
+DROP TABLE IF EXISTS classification;
+CREATE TABLE classification (
+    vehicle_id VARCHAR(10),
+    eligible_purchase_date DATE,
+    unpublished_date DATE,
+    published_date DATE,
+    PRIMARY KEY (vehicle_id),
+    FOREIGN KEY (vehicle_id)
+    REFERENCES auto_sales1.vehicle_data (vehicle_id)
+);
+
+USE auto_orders;
+DROP TABLE IF EXISTS order_data;
+CREATE TABLE order_data (
+    vehicle_id VARCHAR(10),
+    delivery_date DATE,
+    contract_date DATE,
+    cancel_date DATE,
+    PRIMARY KEY (vehicle_id),
+    FOREIGN KEY (vehicle_id)
+    REFERENCES auto_sales1.vehicle_data (vehicle_id)
+);
+
+USE auto_pricing;
+DROP TABLE IF EXISTS price_data;
+CREATE TABLE price_data (
+    lead_id VARCHAR(10) PRIMARY KEY,
+    anticipated_sale_price DECIMAL(10 , 2 )
+);
+
+USE analytics;
+DROP TABLE IF EXISTS market_margins;
+CREATE TABLE market_margins (
+    vehicle_id VARCHAR(10),
+    final_sale_price DECIMAL(10 , 2 ),
+    profit_margin DECIMAL(10 , 2 ),
+    PRIMARY KEY (vehicle_id),
+    FOREIGN KEY (vehicle_id)
+    REFERENCES auto_sales1.vehicle_data (vehicle_id)
+);
+
+USE auto;
+DROP TABLE IF EXISTS lead_data;
+CREATE TABLE lead_data (
+    vehicle_id VARCHAR(10),
+    lead_id VARCHAR(10),
+    PRIMARY KEY (vehicle_id),
+    FOREIGN KEY (vehicle_id)
+        REFERENCES auto_sales1.vehicle_data (vehicle_id)
+);
+
+USE auto;
+DROP TABLE IF EXISTS calendar_dates;
+CREATE TABLE calendar_dates (
+    date_val DATE PRIMARY KEY
+);
+
+
+USE auto_sales1;
+INSERT INTO vehicle_data (vehicle_id, sales_region, initial_import_date, return_date, sales_ready_date, purchase_price, test_flag)
+VALUES 
+    ('V001', 'DE', '2022-01-15', NULL, '2022-01-20', 200000, FALSE),
+    ('V002', 'DE', '2022-02-01', NULL, '2022-02-05', 150000, FALSE),
+    ('V003', 'DE', '2022-03-01', NULL, '2022-03-05', 300000, FALSE),
+    ('V004', 'DE', '2022-04-01', NULL, '2022-04-05', 250000, FALSE),
+	  ('V005', 'DE', '2022-05-01', '2023-01-10', '2022-05-10', 180000, FALSE),
+    ('V006', 'DE', '2022-06-01', NULL, '2022-06-15', 160000, FALSE),
+    ('V007', 'DE', '2022-07-01', NULL, '2022-07-20', 220000, FALSE),
+    ('V008', 'DE', '2022-08-01', NULL, '2022-08-10', 210000, FALSE),
+    ('V009', 'US', '2022-09-01', NULL, '2022-09-10', 250000, FALSE),
+    ('V010', 'FR', '2022-10-01', NULL, '2022-10-10', 240000, FALSE),
+    ('V011', 'DE', '2022-11-01', NULL, '2022-11-10', 260000, FALSE),
+    ('V012', 'FR', '2023-01-01', NULL, '2023-01-10', 220000, FALSE),
+    ('V013', 'US', '2023-02-01', NULL, '2023-02-10', 200000, FALSE),
+	  ('V014', 'FR', '2023-01-05', NULL, '2023-01-20', 260000, FALSE),
+    ('V015', 'US', '2023-02-10', NULL, '2023-02-15', 240000, FALSE),
+    ('V016', 'IT', '2023-03-12', NULL, '2023-03-20', 230000, FALSE),
+    ('V017', 'DE', '2023-04-18', NULL, '2023-04-25', 250000, FALSE),
+    ('V018', 'ES', '2023-05-08', NULL, '2023-05-12', 220000, FALSE);
+
+
+USE auto_classifications;
+INSERT INTO classification (vehicle_id, eligible_purchase_date, unpublished_date, published_date)
+VALUES 
+    ('V001', '2022-02-01', '2022-01-30', '2022-01-31'),
+    ('V002', '2022-02-10', '2022-02-05', '2022-02-08'),
+    ('V003', '2022-03-15', '2022-03-10', '2022-03-12'),
+    ('V004', '2022-04-10', '2022-04-05', '2022-04-08'),
+	  ('V005', '2022-05-15', '2022-05-12', '2022-05-13'),
+    ('V006', '2022-06-20', '2022-06-18', '2022-06-19'),
+    ('V007', '2022-07-25', '2022-07-22', '2022-07-23'),
+    ('V008', '2022-08-15', '2022-08-10', '2022-08-12'),
+    ('V009', '2022-09-15', '2022-09-13', '2022-09-14'),
+    ('V010', '2022-10-20', '2022-10-15', '2022-10-16'),
+    ('V011', '2022-11-25', '2022-11-18', '2022-11-20'),
+    ('V012', '2023-01-25', '2023-01-15', '2023-01-18'),
+    ('V013', '2023-02-20', '2023-02-15', '2023-02-17'),
+   	('V014', '2023-01-10', '2023-01-05', '2023-01-06'),
+    ('V015', '2023-02-15', '2023-02-10', '2023-02-12'),
+    ('V016', '2023-03-18', '2023-03-14', '2023-03-16'),
+    ('V017', '2023-04-25', '2023-04-18', '2023-04-20'),
+    ('V018', '2023-05-12', '2023-05-08', '2023-05-10');
+
+USE auto_orders;
+INSERT INTO order_data (vehicle_id, delivery_date, contract_date, cancel_date)
+VALUES 
+    ('V001', '2022-02-05', '2022-01-20', NULL),
+    ('V002', '2022-02-15', '2022-02-05', NULL),
+    ('V003', '2022-03-20', '2022-03-01', NULL),
+    ('V004', '2022-04-20', '2022-04-01', NULL),
+    ('V005', '2023-02-01', '2022-12-01', NULL),
+    ('V006', '2022-12-15', '2022-11-15', NULL),
+    ('V007', NULL, '2023-01-10', '2023-01-20'), -- Order canceled
+    ('V008', '2023-03-05', '2023-02-05', NULL),
+    ('V009', '2023-03-01', '2022-12-10', NULL),
+    ('V010', '2023-03-15', '2022-12-20', NULL),
+    ('V011', NULL, '2023-01-05', '2023-01-25'), -- //     //
+    ('V012', '2023-03-10', '2023-02-01', NULL),
+    ('V013', '2023-04-10', '2023-02-10', NULL),
+	  ('V014', '2023-02-01', '2023-01-10', NULL),
+    ('V015', '2023-03-05', '2023-02-20', NULL),
+    ('V016', '2023-04-01', '2023-03-25', NULL),
+    ('V017', '2023-05-20', '2023-04-28', NULL),
+    ('V018', '2023-06-01', '2023-05-15', NULL);
+
+USE auto_pricing;
+INSERT INTO price_data (lead_id, anticipated_sale_price)
+VALUES 
+    ('L001', 250000),
+    ('L002', 180000),
+    ('L003', 350000),
+    ('L004', 300000),
+  	('L005', 190000),
+    ('L006', 170000),
+    ('L007', 230000),
+    ('L008', 220000),
+    ('L009', 270000),
+    ('L010', 250000),
+    ('L011', 280000),
+    ('L012', 240000),
+    ('L013', 230000);
+    
+USE analytics;
+INSERT INTO market_margins (vehicle_id, final_sale_price, profit_margin)
+VALUES 
+    ('V001', 240000, 10000),
+    ('V002', 170000, 20000),
+    ('V003', 330000, 20000),
+    ('V004', 290000, 10000),
+    ('V005', 200000, 12000),
+    ('V006', 180000, 14000),
+    ('V007', NULL, NULL), -- Not yet sold
+    ('V008', 215000, 10000),
+    ('V009', 275000, 20000),
+    ('V010', 245000, 15000),
+    ('V011', NULL, NULL), -- // // //
+    ('V012', 235000, 10000),
+    ('V013', 220000, 8000);
+
+
+USE auto;
+INSERT INTO lead_data (vehicle_id, lead_id)
+VALUES 
+    ('V001', 'L001'),
+    ('V002', 'L002'),
+    ('V003', 'L003'),
+    ('V004', 'L004'),
+    ('V005', 'L005'),
+    ('V006', 'L006'),
+    ('V007', 'L007'),
+    ('V008', 'L008'),
+  	('V009', 'L009'),
+    ('V010', 'L010'),
+    ('V011', 'L011'),
+    ('V012', 'L012'),
+    ('V013', 'L013');
+
+INSERT INTO calendar_dates (date_val)
+VALUES 
+    ('2023-10-23'), 
+    ('2023-10-24'), 
+    ('2023-10-25'), 
+    ('2023-01-01'), 
+    ('2023-01-15'), 
+    ('2023-02-01'), 
+    ('2023-02-15'), 
+    ('2023-03-01'),
+    ('2023-03-15'), 
+    ('2023-04-01'), 
+    ('2023-04-15'), 
+    ('2023-05-01'), 
+    ('2023-05-15');
