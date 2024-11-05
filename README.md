@@ -1,25 +1,37 @@
-# Project Title: Automotive Sales Database System
+Vehicle Inventory Analysis SQL Script
+This repository contains a SQL script designed to analyze vehicle inventory data. The script calculates inventory timelines, tracks vehicle status changes, and aggregates inventory metrics by specific intervals. These calculations can support reporting on inventory performance and conversion metrics, potentially aiding in A/B testing setups for evaluating how inventory timelines impact sales performance.
 
-## Overview
-This project involves the creation and management of an automotive sales database system designed to track vehicle sales, classifications, orders, pricing, and analytics. The database is structured to provide insights into the sales performance and inventory status of vehicles across various regions.
+Table of Contents
+Overview
+Features
+Getting Started
+Usage
+Dependencies
+Contributing
+License
+Overview
+The SQL script is structured around two main parts:
 
-## Main Subquery: Sales Data Analysis
-The main subquery, `sales_data`, plays a crucial role in aggregating and filtering essential information about vehicle sales. Here’s a breakdown of what this subquery does, how it is structured, and why it is important:
+Sales Data Consolidation: Collects detailed information about vehicles, including sales data, classification attributes, and key dates. This data is gathered from multiple tables and joins, with fallbacks for missing information.
+Inventory Timeline Analysis: Tracks each vehicle's daily inventory status, flags statuses (e.g., reserved, ready for sale), and categorizes inventory days into specific intervals. The final query aggregates this information by sales region and weekly intervals, enabling a time-segmented analysis of inventory.
+Features
+Detailed Inventory Status: Tracks each vehicle’s status daily across various inventory categories (e.g., coming soon, available online).
+Aggregated Weekly Metrics: Summarizes inventory duration across customizable time intervals.
+Support for Conversion Analysis: Provides data structure that can support A/B testing setups for inventory-related conversion metrics.
+Customizable Intervals: Day-based intervals (0-7 days, 8-14 days, etc.) make it easy to segment inventory for further analysis.
+Usage
+Load the SQL script into your preferred SQL environment or editor.
+Run the script to generate a timeline of inventory data for each vehicle.
+Use the final aggregated data for weekly reporting, conversion analysis, or as part of an A/B testing framework.
+SQL Breakdown
+sales_data CTE: Consolidates vehicle data from various tables (e.g., vehicle data, classifications, orders) and fills missing dates using fallback values.
+inventory_timeline CTE: Calculates inventory days and status flags for each vehicle daily, providing an in-depth view of the inventory life cycle.
+Final Query: Aggregates weekly counts of vehicles in each inventory category by region.
+Dependencies
+SQL environment (e.g., MySQL, PostgreSQL, etc.) with access to the required tables:
+vehicle_data, classification, order_data, lead_data, price_data, market_margins, calendar_dates.
+Contributing
+Contributions are welcome! Please submit a pull request or open an issue to discuss any improvements or modifications.
 
-### Purpose
-The `sales_data` subquery aims to provide a comprehensive view of vehicle sales, including key details such as sales region, import dates, delivery and sales-ready dates, pricing, and classifications. This data is vital for understanding the performance of the automotive inventory and guiding strategic decisions regarding sales and marketing.
-
-### Structure
-1. **Selection of Columns**: The subquery selects various columns from the `vehicle_data` table and joins them with relevant data from other tables, such as `classification`, `order_data`, `lead_data`, `price_data`, and `market_margins`. This ensures that the resulting dataset contains a holistic view of each vehicle's sales status.
-  
-2. **Left Joins**: By using left joins, the query ensures that all vehicles are included in the analysis, even if some do not have associated records in the other tables. This is important for maintaining a complete inventory view, as it captures vehicles that might not have been sold yet.
-
-3. **Conditional Logic**: The subquery uses `COALESCE` functions to provide default values for certain fields, ensuring that there are no null entries that could hinder analysis. For example, it replaces missing delivery dates or sales-ready dates with a fallback future date (`'2999-12-31'`), which helps in creating a comprehensive timeline for each vehicle.
-
-4. **Filtering Criteria**: The subquery filters for vehicles that have been imported after a specific date (`'2020-01-01'`) and excludes test vehicles by checking the `test_flag`. This allows for a more focused analysis on actual sales-ready vehicles.
-
-### Importance
-The results generated from the `sales_data` subquery serve as the foundation for subsequent analysis in the `inventory_timeline` subquery, which evaluates the inventory's status over time. By understanding the sales performance, stakeholders can make informed decisions regarding marketing strategies, pricing adjustments, and inventory management.
-
-## Conclusion
-This database system is designed to enhance the efficiency of automotive sales tracking and analysis. By utilizing structured queries and comprehensive data modeling, it provides valuable insights that can lead to improved sales strategies and customer satisfaction.
+License
+This project is licensed under the MIT License.
