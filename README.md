@@ -1,24 +1,32 @@
-Vehicle Inventory Analysis SQL Script
+# Vehicle Inventory Analysis SQL Script
+
 This repository contains a SQL script designed to analyze vehicle inventory data. The script calculates inventory timelines, tracks vehicle status changes, and aggregates inventory metrics by specific intervals. These calculations can support reporting on inventory performance and conversion metrics, potentially aiding in A/B testing setups for evaluating how inventory timelines impact sales performance.
 
-Table of Contents
-Overview
-Features
-Getting Started
-Usage
-Dependencies
-Contributing
-License
-Overview
-The SQL script is structured around two main parts:
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Dependencies](#dependencies)
+- [Contributing](#contributing)
+- [License](#license)
 
-Sales Data Consolidation: Collects detailed information about vehicles, including sales data, classification attributes, and key dates. This data is gathered from multiple tables and joins, with fallbacks for missing information.
-Inventory Timeline Analysis: Tracks each vehicle's daily inventory status, flags statuses (e.g., reserved, ready for sale), and categorizes inventory days into specific intervals. The final query aggregates this information by sales region and weekly intervals, enabling a time-segmented analysis of inventory.
-Features
-Detailed Inventory Status: Tracks each vehicle’s status daily across various inventory categories (e.g., coming soon, available online).
-Aggregated Weekly Metrics: Summarizes inventory duration across customizable time intervals.
-Support for Conversion Analysis: Provides data structure that can support A/B testing setups for inventory-related conversion metrics.
-Customizable Intervals: Day-based intervals (0-7 days, 8-14 days, etc.) make it easy to segment inventory for further analysis.
+## Overview
+The SQL script is structured around two main parts:
+1. **Sales Data Consolidation**: Collects detailed information about vehicles, including sales data, classification attributes, and key dates. This data is gathered from multiple tables and joins, with fallbacks for missing information.
+2. **Inventory Timeline Analysis**: Tracks each vehicle's daily inventory status, flags statuses (e.g., reserved, ready for sale), and categorizes inventory days into specific intervals. The final query aggregates this information by sales region and weekly intervals, enabling a time-segmented analysis of inventory.
+
+## Features
+- **Detailed Inventory Status**: Tracks each vehicle’s status daily across various inventory categories (e.g., coming soon, available online).
+- **Aggregated Weekly Metrics**: Summarizes inventory duration across customizable time intervals.
+- **Support for Conversion Analysis**: Provides data structure that can support A/B testing setups for inventory-related conversion metrics.
+- **Customizable Intervals**: Day-based intervals (0-7 days, 8-14 days, etc.) make it easy to segment inventory for further analysis.
+
+## Getting Started
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/vehicle-inventory-analysis.git
+Modify any date ranges or parameters within the SQL script if needed to match your database setup or analysis requirements.
 Usage
 Load the SQL script into your preferred SQL environment or editor.
 Run the script to generate a timeline of inventory data for each vehicle.
